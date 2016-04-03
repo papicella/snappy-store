@@ -1013,7 +1013,7 @@ public final class FabricDatabase implements ModuleControl,
         DataPolicy dp = region.getDataPolicy();
         if (dp == DataPolicy.PERSISTENT_PARTITION || dp == DataPolicy.PERSISTENT_REPLICATE) {
           GfxdIndexManager gim = (GfxdIndexManager)region.getIndexUpdater();
-          if (gim == null) continue;
+          if (gim == null || container.isGlobalIndex()) continue;
           int localRegionSz = getLocalRegionSz(region, dp, logger, false, throwErrorOnMismatch);
           List<GemFireContainer> allIndexes = gim.getAllIndexes();
           for (GemFireContainer c : allIndexes) {
@@ -1107,8 +1107,11 @@ public final class FabricDatabase implements ModuleControl,
       long regionUUId = region.getRegionUUID();
       for (AbstractDiskRegion diskReg : diskRegions) {
         long parentUUid = diskReg.getUUID();
+
         // check if pr id matches
         if (parentUUid == regionUUId) {
+          // TODO: Better way to find disk regions of global index's buckets?
+          if (diskReg.getName().contains("____")) continue;
           if (!dump) {
             sz += diskReg.getRecoveredEntryCount();
             int invalidCnt = diskReg.getInvalidOrTombstoneEntryCount();
