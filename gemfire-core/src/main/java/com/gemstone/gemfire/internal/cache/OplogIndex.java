@@ -212,9 +212,8 @@ public final class OplogIndex {
       deleteIRF(hasIrf ? "unreadable file" : "metadata missing");
     }
     else if (recreateIndexFile) {
-      // delete the existing, file as requires recreation
+      // delete the existing file as requires recreation
       deleteIRF(hasIrf ? "unreadable file" : "metadata missing");
-      // also delete the irf of OplogIndex
       this.irf = null;
     }
     this.oplog.indexesWritten.clear();

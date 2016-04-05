@@ -36,6 +36,9 @@ import com.gemstone.gemfire.internal.concurrent.ConcurrentSkipListMap;
 import com.gemstone.gemfire.internal.concurrent.ConcurrentTHashSet;
 import com.pivotal.gemfirexd.DistributedSQLTestBase;
 import com.pivotal.gemfirexd.TestUtil;
+import com.pivotal.gemfirexd.internal.engine.GemFireXDQueryObserver;
+import com.pivotal.gemfirexd.internal.engine.GemFireXDQueryObserverAdapter;
+import com.pivotal.gemfirexd.internal.engine.GemFireXDQueryObserverHolder;
 import com.pivotal.gemfirexd.internal.engine.Misc;
 import com.pivotal.gemfirexd.internal.engine.GfxdConstants;
 import com.pivotal.gemfirexd.internal.engine.access.index.GfxdIndexManager;
@@ -77,7 +80,12 @@ public class IndexPersistenceDUnit extends DistributedSQLTestBase {
   }
 
   public static void setTestIndexRecreateFlag() {
-    FabricDatabase.TEST_INDEX_RECREATE = true;
+    GemFireXDQueryObserver observer = new GemFireXDQueryObserverAdapter() {
+      public boolean testIndexRecreate() {
+        return true;
+      }
+    };
+    GemFireXDQueryObserverHolder.setInstance(observer);
   }
 
   public static void checkIndexRecovery(boolean expected) {

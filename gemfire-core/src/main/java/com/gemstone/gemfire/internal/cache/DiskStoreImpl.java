@@ -4814,16 +4814,16 @@ public class DiskStoreImpl implements DiskStore, ResourceListener<MemoryEvent> {
           SystemFailure.checkFailure();
           indexRecoveryFailure.compareAndSet(null, err);
         } finally {
-//          for (Oplog oplog : this.allOplogs) {
-//            oplog.clearInitRecoveryMap();
-//          }
+          for (Oplog oplog : this.allOplogs) {
+            oplog.clearInitRecoveryMap();
+          }
           markIndexRecoveryDone();
         }
       }
       else {
-//        for (Oplog oplog : this.allOplogs) {
-//          oplog.clearInitRecoveryMap();
-//        }
+        for (Oplog oplog : this.allOplogs) {
+          oplog.clearInitRecoveryMap();
+        }
         markIndexRecoveryDone();
       }
     }
@@ -5275,13 +5275,6 @@ public class DiskStoreImpl implements DiskStore, ResourceListener<MemoryEvent> {
     }
     else {
       resetAsyncQueueCapacity();
-    }
-  }
-
-  public void clearRecoveryMapOfAllOplogs() {
-    PersistentOplogSet oplogSet = getPersistentOplogSet(null);
-    for (Oplog oplog : oplogSet.getAllOplogs()) {
-      oplog.clearInitRecoveryMap();
     }
   }
 }

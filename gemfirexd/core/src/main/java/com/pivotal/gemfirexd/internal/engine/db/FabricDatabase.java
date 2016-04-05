@@ -244,8 +244,6 @@ public final class FabricDatabase implements ModuleControl,
   /** to allow for initial DDL replay even with failures */
   private final boolean allowBootWithFailures = Boolean.getBoolean(
       com.pivotal.gemfirexd.Property.DDLREPLAY_ALLOW_RESTART_WITH_ERRORS);
-
-  public static boolean TEST_INDEX_RECREATE;
   
   /**
    * Creates a new FabricDatabase object.
@@ -1063,52 +1061,41 @@ public final class FabricDatabase implements ModuleControl,
 
   private void checkRecoveredIndex(ArrayList<GemFireContainer> uninitializedContainers,
       final LogWriter logger, boolean throwErrorOnMismatch) {
-    try {
-      for (GemFireContainer container : uninitializedContainers) {
-        LocalRegion region = container.getRegion();
-        DataPolicy dp = region.getDataPolicy();
-        if (dp == DataPolicy.PERSISTENT_PARTITION || dp == DataPolicy.PERSISTENT_REPLICATE) {
-          GfxdIndexManager gim = (GfxdIndexManager)region.getIndexUpdater();
-          if (gim == null || container.isGlobalIndex()) continue;
-          int localRegionSz = getLocalRegionSz(region, dp, logger, false, throwErrorOnMismatch);
-          List<GemFireContainer> allIndexes = gim.getAllIndexes();
-          for (GemFireContainer c : allIndexes) {
-            if (c.isLocalIndex()) {
-              if (c.getIndexSize() != localRegionSz) {
-                if (!throwErrorOnMismatch) {
-                  logger.warning("checkRecoveredIndex: for table: " + region.getName() + " " +
-                      "number of local entries = " + localRegionSz + " and number of " +
-                      "index entries in the index: " + c.getName() + " = " + c.getIndexSize());
-                }
-                else {
-                  logger.error("checkRecoveredIndex: for table: " + region.getName() + " " +
-                      "number of local entries = " + localRegionSz + " and number of " +
-                      "index entries in the index: " + c.getName() + " = " + c.getIndexSize());
-                  dumpIndexAndRegion(region, dp, c, logger);
-                  throw new IllegalStateException("Table data and indexes are not reconciling." +
-                      "Probably need to revoke the disk store");
-                }
-                logger.info("FabricDatabase: index and region out of sync. Recreating the indexes");
-                // First clear all the indexes
-                clearAllIndexes(uninitializedContainers);
-                recreateAllLocalIndexes(logger);
-                checkRecoveredIndex(uninitializedContainers, logger, true);
+    for (GemFireContainer container : uninitializedContainers) {
+      LocalRegion region = container.getRegion();
+      DataPolicy dp = region.getDataPolicy();
+      if (dp == DataPolicy.PERSISTENT_PARTITION || dp == DataPolicy.PERSISTENT_REPLICATE) {
+        GfxdIndexManager gim = (GfxdIndexManager)region.getIndexUpdater();
+        if (gim == null || container.isGlobalIndex()) continue;
+        int localRegionSz = getAndDumpLocalRegionSize(region, dp, logger, false, throwErrorOnMismatch);
+        List<GemFireContainer> allIndexes = gim.getAllIndexes();
+        for (GemFireContainer c : allIndexes) {
+          if (c.isLocalIndex()) {
+            if (c.getIndexSize() != localRegionSz) {
+              if (!throwErrorOnMismatch) {
+                logger.warning("checkRecoveredIndex: for table: " + region.getName() + " " +
+                    "number of local entries = " + localRegionSz + " and number of " +
+                    "index entries in the index: " + c.getName() + " = " + c.getIndexSize());
               } else {
-                if (logger.fineEnabled()) {
-                  logger.fine("checkRecoveredIndex: local index: " + c.getName() +
-                      " and table: " + region.getName() + " with size: " + localRegionSz);
-                }
+                logger.error("checkRecoveredIndex: for table: " + region.getName() + " " +
+                    "number of local entries = " + localRegionSz + " and number of " +
+                    "index entries in the index: " + c.getName() + " = " + c.getIndexSize());
+                dumpIndexAndRegion(region, dp, c, logger);
+                throw new IllegalStateException("Table data and indexes are not reconciling." +
+                    "Probably need to revoke the disk store");
+              }
+              logger.info("FabricDatabase: index and region out of sync. Recreating the indexes");
+              // First clear all the indexes
+              clearAllIndexes(uninitializedContainers);
+              recreateAllLocalIndexes(logger);
+              checkRecoveredIndex(uninitializedContainers, logger, true);
+            } else {
+              if (logger.fineEnabled()) {
+                logger.fine("checkRecoveredIndex: local index: " + c.getName() +
+                    " and table: " + region.getName() + " with size: " + localRegionSz);
               }
             }
           }
-        }
-      }
-    } finally {
-      // clear the init recovery map
-      Collection<DiskStoreImpl> diskStores = Misc.getGemFireCache().listDiskStores();
-      for (DiskStoreImpl ds : diskStores) {
-        if (!ds.getName().equals(GfxdConstants.GFXD_DD_DISKSTORE_NAME)) {
-          ds.clearRecoveryMapOfAllOplogs();
         }
       }
     }
@@ -1116,7 +1103,7 @@ public final class FabricDatabase implements ModuleControl,
 
   private void dumpIndexAndRegion(LocalRegion region, DataPolicy dp, GemFireContainer index, LogWriter logger) {
     ((MemIndex)index.getConglomerate()).dumpIndex("Dumping all indexes");
-    getLocalRegionSz(region, dp, logger, true, false);
+    getAndDumpLocalRegionSize(region, dp, logger, true, false);
   }
 
   private void clearAllIndexes(ArrayList<GemFireContainer> uninitializedContainers) {
@@ -1153,7 +1140,8 @@ public final class FabricDatabase implements ModuleControl,
     }
   }
 
-  private int getLocalRegionSz(LocalRegion region, DataPolicy dp, final LogWriter logger, boolean dump, boolean throwErrorOnMismatch) {
+  private int getAndDumpLocalRegionSize(LocalRegion region, DataPolicy dp,
+      final LogWriter logger, boolean dump, boolean throwErrorOnMismatch) {
     int sz = 0;
     if (dp == DataPolicy.PERSISTENT_PARTITION) {
       DiskStoreImpl ds = region.getDiskStore();
@@ -1209,7 +1197,8 @@ public final class FabricDatabase implements ModuleControl,
       }
     }
 
-    if (!throwErrorOnMismatch && TEST_INDEX_RECREATE) {
+    GemFireXDQueryObserver observer = GemFireXDQueryObserverHolder.getInstance();
+    if (!throwErrorOnMismatch && (observer != null && observer.testIndexRecreate())) {
       // To check whether recreation is happening properly or not.
       logger.info("Returning a wrong size as TEST_INDEX_RECREATE flag is true ");
       return sz+10;
