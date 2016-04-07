@@ -960,6 +960,7 @@ public final class FabricDatabase implements ModuleControl,
       // pre-initialize so before fully initializing the container and hence the
       // underlying region let's do a sanity check on the index size and region size
       // for sorted indexes.
+      logger.info("KN: Persist index: " + this.memStore.isPersistIndexes());
       if (this.memStore.isPersistIndexes() &&
           this.memStore.getMyVMKind() == GemFireStore.VMKind.DATASTORE) {
         checkRecoveredIndex(uninitializedContainers, logger, false);
