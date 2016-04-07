@@ -2967,6 +2967,9 @@ public final class Oplog implements CompactableOplog {
               }
               de = initRecoveredEntry(drs.getDiskRegionView(), drs.initializeRecoveredEntry(key, re));
               drs.getDiskRegionView().incRecoveredEntryCount();
+              if (EntryBits.isAnyInvalid(userBits) || EntryBits.isTombstone(userBits)) {
+                drs.getDiskRegionView().incInvalidOrTombstoneEntryCount();
+              }
               this.stats.incRecoveredEntryCreates();
               
             } else {
@@ -3505,6 +3508,9 @@ public final class Oplog implements CompactableOplog {
             de = drs.initializeRecoveredEntry(key, re);
             initRecoveredEntry(drv, de);
             drs.getDiskRegionView().incRecoveredEntryCount();
+            if (EntryBits.isAnyInvalid(userBits) || EntryBits.isTombstone(userBits)) {
+              drs.getDiskRegionView().incInvalidOrTombstoneEntryCount();
+            }
             this.stats.incRecoveredEntryCreates();
             
           } else {
