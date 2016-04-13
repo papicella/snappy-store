@@ -963,7 +963,12 @@ public final class FabricDatabase implements ModuleControl,
       logger.info("KN: Persist index: " + this.memStore.isPersistIndexes());
       if (this.memStore.isPersistIndexes() &&
           this.memStore.getMyVMKind() == GemFireStore.VMKind.DATASTORE) {
-        checkRecoveredIndex(uninitializedContainers, logger, false);
+        try {
+          checkRecoveredIndex(uninitializedContainers, logger, false);
+        } catch (RuntimeException ex) {
+          logger.info("KN: Runtime exception while doing checkRecoveredIndex ex: " + ex.getMessage(), ex);
+          throw ex;
+        }
       }
 
       for (GemFireContainer container : uninitializedContainers) {
@@ -1158,15 +1163,23 @@ public final class FabricDatabase implements ModuleControl,
         if (parentUUid == regionUUId) {
           // TODO: Better way to find disk regions of global index's buckets?
           if (diskReg.getName().contains("____")) continue;
+          RegionMap rmap = diskReg.getRecoveredEntryMap();
+          Collection<RegionEntry> res = rmap != null ? rmap.regionEntriesInVM() : null;
           if (!dump) {
-            sz += diskReg.getRecoveredEntryCount();
-            int invalidCnt = diskReg.getInvalidOrTombstoneEntryCount();
+//            sz += diskReg.getRecoveredEntryCount();
+//            diskReg.getRecoveredEntryMap();
+//            int invalidCnt = diskReg.getInvalidOrTombstoneEntryCount();
+//            sz -= invalidCnt;
+            //sz += diskReg.getRecoveredEntryMap() != null ? diskReg.getRecoveredEntryMap().size() : 0;
+            int mapSize = (res != null ? res.size() : 0);
+            sz += mapSize;
+            int invalidCnt = rmap != null ? rmap.getTombstoneCountAfterRecovery() : 0;
             sz -= invalidCnt;
+            logger.info("For region: " + diskReg.getName() + " mapSize = " + mapSize + " and invalid = " + invalidCnt);
           } else {
             logger.info("Dumping key value for region: " + region.getName());
-            RegionMap rmap = diskReg.getRecoveredEntryMap();
             if (rmap != null) {
-              Collection<RegionEntry> res = rmap.regionEntriesInVM();
+              //Collection<RegionEntry> res = rmap.regionEntriesInVM();
               for (RegionEntry re : res) {
                 logger.info("reKey=" + re.getKey() + " value=" + re._getValue());
               }
@@ -1180,9 +1193,18 @@ public final class FabricDatabase implements ModuleControl,
     else {
       DiskRegion diskReg = region.getDiskRegion();
       if (!dump) {
-        sz = diskReg.getRecoveredEntryCount();
-        sz -= diskReg.getInvalidOrTombstoneEntryCount();
-        logger.info("region size = " + sz + " region: " + region.getName());
+        //sz = diskReg.getRecoveredEntryCount();
+        //sz -= diskReg.getInvalidOrTombstoneEntryCount();
+//        logger.info("region size = " + sz + " region: " + region.getName());
+        //RegionMap rmap = diskReg.getRecoveredEntryMap();
+        RegionMap rmap = region.getRegionMap();
+        Collection<RegionEntry> res = rmap != null ? rmap.regionEntriesInVM() : null;
+////        //sz += diskReg.getRecoveredEntryMap() != null ? diskReg.getRecoveredEntryMap().size() : 0;
+        int mapSize = (res != null ? res.size() : 0);
+        sz += mapSize;
+        int invalidCnt = (rmap != null ? rmap.getTombstoneCountAfterRecovery() : 0);
+        sz -= invalidCnt;
+        logger.info("For region: " + region.getName() + " mapSize = " + mapSize + " and invalid = " + invalidCnt);
       }
       else {
         logger.info("Dumping key value for region: " + region.getName());

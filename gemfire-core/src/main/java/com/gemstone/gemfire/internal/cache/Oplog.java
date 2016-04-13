@@ -3234,12 +3234,13 @@ public final class Oplog implements CompactableOplog {
             if (tag != null) {
               re.setVersionTag(tag);
             }
-            if (de.getValueAsToken() != Token.TOMBSTONE) {
+
+            de = drs.updateRecoveredEntry(key, de, re);
+            if (de != null && de.getValueAsToken() != Token.TOMBSTONE) {
               if (EntryBits.isAnyInvalid(userBits) || EntryBits.isTombstone(userBits)) {
                 drs.getDiskRegionView().incInvalidOrTombstoneEntryCount();
               }
             }
-            de = drs.updateRecoveredEntry(key, de, re);
             updateRecoveredEntry(drs.getDiskRegionView(), de, re);
             
             this.stats.incRecoveredEntryUpdates();

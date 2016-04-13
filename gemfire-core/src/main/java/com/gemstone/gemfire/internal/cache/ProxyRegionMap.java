@@ -300,6 +300,10 @@ public final class ProxyRegionMap implements RegionMap {
     return false;
   }
 
+  public int getTombstoneCountAfterRecovery() {
+    return 0;
+  }
+
   @Override
   public void txApplyDestroy(RegionEntry re, TXStateInterface txState,
       Object key, boolean inTokenMode, boolean inRI, boolean localOp,

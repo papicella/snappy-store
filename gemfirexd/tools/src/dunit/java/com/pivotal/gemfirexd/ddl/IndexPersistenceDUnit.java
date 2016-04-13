@@ -264,7 +264,7 @@ public class IndexPersistenceDUnit extends DistributedSQLTestBase {
         + "add constraint cust_fk foreign key (c2) references " + "TMP.T1 (c2)");
   }
   
-  public void testConstraintIndexes() throws Exception {
+  public void _testConstraintIndexes() throws Exception {
     Statement stmt = null;
     boolean success = false;
     try {
@@ -347,7 +347,7 @@ public class IndexPersistenceDUnit extends DistributedSQLTestBase {
     }
   }
 
-  public void testNewIndexCreatedElseWhereWhenAMemberDown() throws Exception {
+  public void _testNewIndexCreatedElseWhereWhenAMemberDown() throws Exception {
     Statement stmt = null;
     boolean success = false;
     try {
@@ -485,6 +485,9 @@ public class IndexPersistenceDUnit extends DistributedSQLTestBase {
           new Object[] { GfxdConstants.GFXD_PERSIST_INDEXES, "false" });
       stopAllVMs();
     }
+  }
+  protected String reduceLogging() {
+    return "fine";
   }
 
   public void _testCompaction() throws Exception {
