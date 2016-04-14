@@ -1017,9 +1017,6 @@ abstract class AbstractRegionMap implements RegionMap {
         
         incEntryCount(1); // we are creating an entry that was recovered from disk including tombstone
       }
-      if (newRe != null && newRe.isTombstone()) {
-        this.tombstoneCount.addAndGet(1);
-      }
       lruEntryUpdate(newRe);
       needsCallback = true;
     }
@@ -1028,12 +1025,6 @@ abstract class AbstractRegionMap implements RegionMap {
     }
     EntryLogger.logRecovery(_getOwnerObject(), key, value);
     return newRe;
-  }
-
-  private AtomicInteger tombstoneCount = new AtomicInteger();
-
-  public int getTombstoneCount() {
-    return this.tombstoneCount.get();
   }
 
   public final RegionEntry updateRecoveredEntry(Object key, RegionEntry re,
@@ -1067,14 +1058,12 @@ abstract class AbstractRegionMap implements RegionMap {
           re.setValue(owner, value); // OFFHEAP no need to call AbstractRegionMap.prepareValueForCache because setValue is overridden for disk and that code takes apart value (RecoveredEntry) and prepares its nested value for the cache
           if (re.isTombstone()) {
             owner.scheduleTombstone(re, re.getVersionStamp().asVersionTag());
-            this.tombstoneCount.addAndGet(1);
           }
           owner.updateSizeOnPut(key, oldSize, owner.calculateRegionEntryValueSize(re));
         } else {
           PlaceHolderDiskRegion phd = (PlaceHolderDiskRegion)_getOwnerObject();
           DiskEntry.Helper.updateRecoveredEntry(phd, (DiskEntry)re, value, phd);
           if (re != null && re.isTombstone()) {
-            this.tombstoneCount.addAndGet(1);
           }
         }
       } catch (RegionClearedException rce) {
@@ -4962,10 +4951,6 @@ RETRY_LOOP:
         }
       }
     }
-  }
-
-  public int getTombstoneCountAfterRecovery() {
-    return this.tombstoneCount.get();
   }
 
   public long estimateMemoryOverhead(SingleObjectSizer sizer) {

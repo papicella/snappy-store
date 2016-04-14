@@ -437,6 +437,4 @@ public interface RegionMap extends LRUMapCallbacks {
    * during GII.
    */
   public boolean isListOfDeltas(Object key);
-
-  public int getTombstoneCountAfterRecovery();
 }

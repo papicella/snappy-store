@@ -3235,8 +3235,9 @@ public final class Oplog implements CompactableOplog {
               re.setVersionTag(tag);
             }
 
+            boolean isOldValueToken = de.getValueAsToken() != null ? true : false;
             de = drs.updateRecoveredEntry(key, de, re);
-            if (de != null && de.getValueAsToken() != Token.TOMBSTONE) {
+            if (de != null && de.getValueAsToken() == Token.TOMBSTONE && !isOldValueToken) {
               if (EntryBits.isAnyInvalid(userBits) || EntryBits.isTombstone(userBits)) {
                 drs.getDiskRegionView().incInvalidOrTombstoneEntryCount();
               }

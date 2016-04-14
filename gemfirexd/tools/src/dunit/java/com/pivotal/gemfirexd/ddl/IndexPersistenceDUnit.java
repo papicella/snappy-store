@@ -264,7 +264,7 @@ public class IndexPersistenceDUnit extends DistributedSQLTestBase {
         + "add constraint cust_fk foreign key (c2) references " + "TMP.T1 (c2)");
   }
   
-  public void _testConstraintIndexes() throws Exception {
+  public void testConstraintIndexes() throws Exception {
     Statement stmt = null;
     boolean success = false;
     try {
@@ -347,7 +347,7 @@ public class IndexPersistenceDUnit extends DistributedSQLTestBase {
     }
   }
 
-  public void _testNewIndexCreatedElseWhereWhenAMemberDown() throws Exception {
+  public void testNewIndexCreatedElseWhereWhenAMemberDown() throws Exception {
     Statement stmt = null;
     boolean success = false;
     try {
