@@ -486,9 +486,6 @@ public class IndexPersistenceDUnit extends DistributedSQLTestBase {
       stopAllVMs();
     }
   }
-  protected String reduceLogging() {
-    return "fine";
-  }
 
   public void _testCompaction() throws Exception {
     try {

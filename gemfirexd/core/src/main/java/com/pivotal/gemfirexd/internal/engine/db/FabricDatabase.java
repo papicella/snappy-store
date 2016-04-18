@@ -1214,7 +1214,6 @@ public final class FabricDatabase implements ModuleControl,
           Collection<RegionEntry> res = rmap != null ? rmap.regionEntriesInVM() : null;
           if (!dump) {
             sz += diskReg.getRecoveredEntryCount();
-            diskReg.getRecoveredEntryMap();
             int invalidCnt = diskReg.getInvalidOrTombstoneEntryCount();
             sz -= invalidCnt;
           } else {
