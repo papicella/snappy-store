@@ -1063,8 +1063,6 @@ abstract class AbstractRegionMap implements RegionMap {
         } else {
           PlaceHolderDiskRegion phd = (PlaceHolderDiskRegion)_getOwnerObject();
           DiskEntry.Helper.updateRecoveredEntry(phd, (DiskEntry)re, value, phd);
-          if (re != null && re.isTombstone()) {
-          }
         }
       } catch (RegionClearedException rce) {
         throw new IllegalStateException("RegionClearedException should never happen in this context", rce);
@@ -4939,7 +4937,7 @@ RETRY_LOOP:
     }
     return false;
   }
-
+  
   public final void removeIfDelta(Object key) {
     RegionEntry re = getEntry(key);
     if (re != null) {
@@ -4952,7 +4950,7 @@ RETRY_LOOP:
       }
     }
   }
-
+  
   public long estimateMemoryOverhead(SingleObjectSizer sizer) {
     return sizer.sizeof(this) + estimateChildrenMemoryOverhead(sizer);
   }
