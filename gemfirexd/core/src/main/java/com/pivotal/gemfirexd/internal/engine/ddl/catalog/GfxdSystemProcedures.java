@@ -2167,6 +2167,29 @@ public class GfxdSystemProcedures extends SystemProcedures {
   }
 
   /**
+   * Get the schema for a column table as a JSON string (as in Spark SQL).
+   *
+   * @param table The qualified name of column table.
+   * @throws SQLException if table is not found or is not a column table
+   */
+  public static void GET_COLUMN_TABLE_SCHEMA(String table,
+      String[] schemaAsJson) throws SQLException {
+
+    String schemaString = Misc.getMemStoreBooting().getExternalCatalog()
+        .getColumnTableSchemaAsJson(table, true);
+    if (schemaString == null) {
+      throw PublicAPI.wrapStandardException(StandardException.newException(
+          SQLState.TABLE_NOT_FOUND, table));
+    }
+    if (GemFireXDUtils.TraceExecute) {
+      SanityManager.DEBUG_PRINT(GfxdConstants.TRACE_EXECUTION,
+          "GET_COLUMN_TABLE_SCHEMA table=" + table + " schema=" + schemaString);
+    }
+    //schemaAsJson[0] = new HarmonySerialClob(schemaString);
+    schemaAsJson[0] = schemaString;
+  }
+
+  /**
    * Get the default or nested connection corresponding to the URL
    * jdbc:default:connection. We do not use DriverManager here as it is not
    * supported in JSR 169. IN addition we need to perform more checks for null

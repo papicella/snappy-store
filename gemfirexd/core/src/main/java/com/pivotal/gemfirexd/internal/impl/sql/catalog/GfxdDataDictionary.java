@@ -31,12 +31,12 @@ import com.pivotal.gemfirexd.internal.catalog.AliasInfo;
 import com.pivotal.gemfirexd.internal.catalog.TypeDescriptor;
 import com.pivotal.gemfirexd.internal.catalog.UUID;
 import com.pivotal.gemfirexd.internal.catalog.types.RoutineAliasInfo;
-import com.pivotal.gemfirexd.internal.engine.IndexInfo;
-import com.pivotal.gemfirexd.internal.engine.Misc;
-import com.pivotal.gemfirexd.internal.engine.OplogIndexReader;
 import com.pivotal.gemfirexd.internal.engine.GfxdConstants;
 import com.pivotal.gemfirexd.internal.engine.GfxdJarHandler;
 import com.pivotal.gemfirexd.internal.engine.GfxdVTITemplateNoAllNodesRoute;
+import com.pivotal.gemfirexd.internal.engine.IndexInfo;
+import com.pivotal.gemfirexd.internal.engine.Misc;
+import com.pivotal.gemfirexd.internal.engine.OplogIndexReader;
 import com.pivotal.gemfirexd.internal.engine.UpdateVTITemplate;
 import com.pivotal.gemfirexd.internal.engine.access.GemFireTransaction;
 import com.pivotal.gemfirexd.internal.engine.ddl.callbacks.CallbackProcedures;
@@ -1612,7 +1612,7 @@ public final class GfxdDataDictionary extends DataDictionaryImpl {
           newlyCreatedRoutines, tc, GFXD_SYS_PROC_CLASSNAME, true);
 
     }
-    
+
     {
       // GET_BUCKET_TO_SERVERS_MAPPING
       String[] arg_names = new String[] { "FQTN", "BKT_TO_SERVER_MAPPING" };
@@ -1777,18 +1777,28 @@ public final class GfxdDataDictionary extends DataDictionaryImpl {
           tc, GFXD_SYS_PROC_CLASSNAME, true);
     }
     {
-      
       super.createSystemProcedureOrFunction("GET_IS_NATIVE_NANOTIMER",
           sysUUID, null, null, 0, 0, RoutineAliasInfo.CONTAINS_SQL,
           DataTypeDescriptor.getCatalogType(Types.BOOLEAN), newlyCreatedRoutines, tc,
           GFXD_SYS_PROC_CLASSNAME, false);
     }
     {
-      
       super.createSystemProcedureOrFunction("GET_NATIVE_NANOTIMER_TYPE",
           sysUUID, null, null, 0, 0, RoutineAliasInfo.CONTAINS_SQL,
           DataTypeDescriptor.getCatalogType(Types.VARCHAR), newlyCreatedRoutines, tc,
           GFXD_SYS_PROC_CLASSNAME, false);
+    }
+    {
+      // GET_COLUMN_TABLE_SCHEMA(String,Clob[])
+      String[] arg_names = new String[]{"TABLE", "SCHEMA_AS_JSON"};
+      TypeDescriptor[] arg_types = new TypeDescriptor[]{
+          DataTypeDescriptor.getCatalogType(Types.VARCHAR),
+          DataTypeDescriptor.getCatalogType(Types.LONGVARCHAR)
+      };
+      super.createSystemProcedureOrFunction("GET_COLUMN_TABLE_SCHEMA", sysUUID,
+          arg_names, arg_types, 1, 0, RoutineAliasInfo.READS_SQL_DATA, null,
+          newlyCreatedRoutines, tc, GFXD_SYS_PROC_CLASSNAME, false);
+
     }
   }
 
