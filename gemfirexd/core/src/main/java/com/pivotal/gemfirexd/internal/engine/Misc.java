@@ -1087,7 +1087,20 @@ public abstract class Misc {
     }
     return 19;
   }
-  
+
+  public static boolean parseBoolean(String s) {
+    if (s != null) {
+      s = s.trim();
+      if (s.length() == 1) {
+        return Integer.parseInt(s) != 0;
+      } else {
+        return Boolean.parseBoolean(s);
+      }
+    } else {
+      return false;
+    }
+  }
+
   public static TreeSet<Map.Entry<Integer, Long>> sortByValue(
       Map<Integer, Long> distribution) {
     TreeSet<Map.Entry<Integer, Long>> entriesByVal = new TreeSet<Map.Entry<Integer, Long>>(
