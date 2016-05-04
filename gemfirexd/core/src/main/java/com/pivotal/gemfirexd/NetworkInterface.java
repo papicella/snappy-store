@@ -20,7 +20,7 @@ package com.pivotal.gemfirexd;
 import java.net.Socket;
 import java.util.Properties;
 
-import com.pivotal.gemfirexd.thrift.ServerType;
+import io.snappydata.thrift.ServerType;
 
 /**
  * Encapsulates a network listener that clients can use to connect using
