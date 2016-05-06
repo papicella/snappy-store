@@ -41,8 +41,7 @@
 #define DATETIME_H_
 
 #include "SQLException.h"
-extern "C"
-{
+extern "C" {
 # include <time.h>
 }
 

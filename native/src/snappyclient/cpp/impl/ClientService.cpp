@@ -39,7 +39,6 @@
 
 #include "ClientService.h"
 
-#include <boost/thread/lock_guard.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/asio.hpp>
@@ -101,7 +100,7 @@ bool thrift::HostAddress::operator <(const HostAddress& other) const {
 
 std::string ClientService::s_hostName;
 std::string ClientService::s_hostId;
-boost::mutex ClientService::s_globalLock;
+std::mutex ClientService::s_globalLock;
 
 void DEFAULT_OUTPUT_FN(const char *str) {
   LogWriter::INFO() << str << _SNAPPY_NEWLINE;
@@ -109,7 +108,7 @@ void DEFAULT_OUTPUT_FN(const char *str) {
 
 void ClientService::staticInitialize(
     std::map<std::string, std::string>& props) {
-  boost::lock_guard<boost::mutex> sync(s_globalLock);
+  std::lock_guard<std::mutex> sync(s_globalLock);
 
   if (s_hostName.empty()) {
 
@@ -548,7 +547,7 @@ protocol::TProtocol* ClientService::createProtocol(
       break;
     default:
       std::string reason("unexpected server type for thrift driver = ");
-      reason.append(boost::lexical_cast<std::string>((int)serverType));
+      reason.append(std::to_string((int)serverType));
       throw GET_SQLEXCEPTION(SQLState::UNKNOWN_EXCEPTION, reason);
   }
 
@@ -1417,7 +1416,7 @@ ClientServiceHolder::ClientServiceHolder() :
 }
 
 void* ClientServiceHolder::registerInstance(ClientService& service) {
-  boost::lock_guard<boost::mutex> sync(m_servicesLock);
+  std::lock_guard<std::mutex> sync(m_servicesLock);
 
   const uint32_t serviceId = ++m_numServices;
   std::vector<boost::shared_ptr<ClientService> > list;
@@ -1432,7 +1431,7 @@ void ClientServiceHolder::incrementReferenceCount(void* serviceId) {
     // still taking lock to make inc/dec thread-safe though we might consider
     // having per-service mutex instead if its a bottleneck (global lock should
     //   not be a bottleneck given the call is uncommon but needs verification)
-    boost::lock_guard<boost::mutex> sync(m_servicesLock);
+    std::lock_guard<std::mutex> sync(m_servicesLock);
 
     service_list& list = *static_cast<service_list*>(serviceId);
     // list should be size > 0 so make a copy of shared_ptr to increase refCount
@@ -1449,7 +1448,7 @@ void ClientServiceHolder::decrementReferenceCount(void* serviceId) {
     // still taking lock to make inc/dec thread-safe though we might consider
     // having per-service mutex instead if its a bottleneck (global lock should
     //   not be a bottleneck given the call is uncommon but needs verification)
-    boost::lock_guard<boost::mutex> sync(m_servicesLock);
+    std::lock_guard<std::mutex> sync(m_servicesLock);
 
     service_list& list = *static_cast<service_list*>(serviceId);
     // list should be size > 0 so remove a shared_ptr from list
@@ -1475,7 +1474,7 @@ void ClientServiceHolder::decrementReferenceCount(void* serviceId) {
 boost::shared_ptr<ClientService> ClientServiceHolder::getService(
     const void* serviceId) {
   if (serviceId != NULL) {
-    boost::lock_guard<boost::mutex> sync(m_servicesLock);
+    std::lock_guard<std::mutex> sync(m_servicesLock);
 
     const service_list& list = *static_cast<const service_list*>(serviceId);
     // list should be size > 0

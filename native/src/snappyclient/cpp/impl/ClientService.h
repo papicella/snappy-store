@@ -39,7 +39,7 @@
 #include "ClientBaseImpl.h"
 
 #include <boost/shared_ptr.hpp>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 
 #include "../thrift/SnappyDataService.h"
 
@@ -160,7 +160,7 @@ namespace impl {
     // the static hostName and hostId used by all connections
     static std::string s_hostName;
     static std::string s_hostId;
-    static boost::mutex s_globalLock;
+    static std::mutex s_globalLock;
 
   public:
     ClientService(const std::string& host, const int port,
@@ -322,10 +322,10 @@ namespace impl {
   class ClientServiceHolder {
   private:
     typedef std::vector<boost::shared_ptr<ClientService> > service_list;
-    typedef hash_map<long, service_list>::type services_map;
+    typedef std::unordered_map<long, service_list> services_map;
 
     services_map m_services;
-    boost::mutex m_servicesLock;
+    std::mutex m_servicesLock;
     uint32_t m_numServices;
 
     ClientServiceHolder();

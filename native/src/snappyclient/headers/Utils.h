@@ -42,8 +42,7 @@
 
 #include "ClientBase.h"
 
-extern "C"
-{
+extern "C" {
 #ifdef _LINUX
 #include <sys/prctl.h>
 #else

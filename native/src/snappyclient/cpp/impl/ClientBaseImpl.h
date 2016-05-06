@@ -39,20 +39,6 @@
 #include "ClientBase.h"
 
 /*
-#ifdef _WINDOWS
-template<typename K, typename V>
-struct hash_map {
-  typedef std::map<K, V> type;
-};
-#else
-#include <tr1/unordered_map>
-
-template<typename K, typename V>
-struct hash_map {
-  typedef std::tr1::unordered_map<K, V> type;
-};
-#endif
-*/
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
@@ -65,5 +51,8 @@ template<typename K>
 struct hash_set {
   typedef boost::unordered_set<K> type;
 };
+*/
+#include <unordered_map>
+#include <unordered_set>
 
 #endif /* CLIENTBASEIMPL_H_ */

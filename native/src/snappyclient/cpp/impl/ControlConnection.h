@@ -38,9 +38,23 @@
 
 #include "ClientService.h"
 
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 
 #include "../thrift/LocatorService.h"
+
+namespace std {
+  template<>
+  struct hash<io::snappydata::thrift::HostAddress> {
+    std::size_t operator()(
+        const io::snappydata::thrift::HostAddress& addr) const {
+      std::size_t h = 37;
+      h = 37 * h + addr.port;
+      h = 37 * h + std::hash<std::string>()(addr.hostName);
+      h = 37 * h + std::hash<std::string>()(addr.ipAddress);
+      return h;
+    }
+  };
+}
 
 namespace io {
 namespace snappydata {
@@ -64,10 +78,10 @@ namespace impl {
     thrift::HostAddress m_controlHost;
     AutoPtr<thrift::LocatorServiceClient> m_controlLocator;
     const std::vector<thrift::HostAddress> m_controlHosts;
-    const hash_set<thrift::HostAddress>::type m_controlHostSet;
+    const std::unordered_set<thrift::HostAddress> m_controlHostSet;
     const std::set<std::string>& m_serverGroups;
 
-    const boost::mutex m_lock;
+    const std::mutex m_lock;
 
     /**
      * Since one DS is supposed to have one ControlConnection, so we expect the
@@ -75,7 +89,7 @@ namespace impl {
      */
     static const std::vector<AutoPtr<ControlConnection> > s_allConnections;
     /** Global lock for {@link allConnections} */
-    static const boost::mutex s_allConnsLock;
+    static const std::mutex s_allConnsLock;
 
     void failoverToAvailableHost(std::set<thrift::HostAddress>& failedServers,
         const std::exception* failure);

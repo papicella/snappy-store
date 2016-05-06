@@ -37,9 +37,9 @@ if ((rootProject.name.contains('native') && !rootProject.hasProperty('skipNative
             }
 
             linker.args '-Wl,-Bstatic', '-lthrift', '-lboost_system',
-                '-lboost_chrono', '-lboost_thread', '-lboost_log',
-                '-lboost_log_setup', '-lboost_filesystem', '-lboost_date_time',
-                '-Wl,-Bdynamic', '-lcrypto', '-lssl', '-lgmp', '-lpthread'
+                        '-lboost_chrono', '-lboost_thread', '-lboost_log',
+                        '-lboost_log_setup', '-lboost_filesystem', '-lboost_date_time',
+                        '-Wl,-Bdynamic', '-lcrypto', '-lssl', '-lgmp', '-lpthread'
           }
         }
       }
@@ -59,9 +59,9 @@ if ((rootProject.name.contains('native') && !rootProject.hasProperty('skipNative
         // Define toolchain-specific compiler and linker options
         if (toolChain in Gcc) {
           cppCompiler.args '-Wall', '-Wno-unused-local-typedefs', '-DPIC', '-fPIC',
-            '-std=c++11', '-I', '/usr/include/x86_64-linux-gnu',
-            '-I', '/export/shared/software/boost/1.59.0/linux64/include',
-            '-I', '/export/shared/software/thrift/1.0.0-dev/linux64/include'
+                           '-std=c++11', '-I', '/usr/include/x86_64-linux-gnu',
+                           '-I', '/export/shared/software/boost/1.59.0/linux64/include',
+                           '-I', '/export/shared/software/thrift/1.0.0-dev/linux64/include'
           if (buildType == buildTypes.debug) {
             cppCompiler.args '-g3', '-O0'
           } else {

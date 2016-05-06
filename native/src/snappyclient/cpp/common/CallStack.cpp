@@ -36,8 +36,7 @@
 #include "common/CallStack.h"
 
 #ifdef __GNUC__
-extern "C"
-{
+extern "C" {
 #  include <execinfo.h>
 }
 #endif

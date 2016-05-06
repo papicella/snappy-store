@@ -36,7 +36,6 @@
 #include "ControlConnection.h"
 
 #include <boost/assign/list_of.hpp>
-#include <boost/thread/lock_guard.hpp>
 
 using namespace apache::thrift;
 using namespace io::snappydata::client;
@@ -92,7 +91,7 @@ ControlConnection::ControlConnection() {
 
 const std::vector<AutoPtr<ControlConnection> > ControlConnection::
     s_allConnections(2);
-const boost::mutex ControlConnection::s_allConnsLock;
+const std::mutex ControlConnection::s_allConnsLock;
 
 ControlConnection::ControlConnection(const ClientService& service) :
     m_snappyServerType(service.m_reqdServerType), m_snappyServerTypeSet(
@@ -108,13 +107,13 @@ const AutoPtr<ControlConnection>& ControlConnection::getOrCreateControlConnectio
 {
   // loop through all ControlConnections since size of this global list is
   // expected to be in single digit (total number of distributed systems)
-  boost::lock_guard<boost::mutex> globalGuard(s_allConnsLock);
+  std::lock_guard<std::mutex> globalGuard(s_allConnsLock);
 
   size_t index = s_allConnections.size();
   while (--index >= 0) {
     AutoPtr<ControlConnection>& controlService = s_allConnections[index];
 
-    boost::lock_guard<boost::mutex> serviceGuard(
+    std::lock_guard<std::mutex> serviceGuard(
         controlService->m_lock);
     if (controlService->m_controlHostSet.find(hostAddr)
         != controlService->m_controlHostSet.end()) {

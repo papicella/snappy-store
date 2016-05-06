@@ -105,8 +105,7 @@
 #  define _SNAPPY_NEWLINE_STR "\n"
 #endif
 
-extern "C"
-{
+extern "C" {
 #  include <stdint.h>
 }
 #include <string>
